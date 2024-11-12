@@ -14,7 +14,16 @@ import (
 
 type CollectDataPlugin struct{}
 
-func (p *CollectDataPlugin) Init() models.ActionDetails {
+func (p *CollectDataPlugin) Init() models.Plugin {
+	return models.Plugin{
+		Name:    "Collect Data",
+		Type:    "action",
+		Version: "1.0.1",
+		Creator: "JustNZ",
+	}
+}
+
+func (p *CollectDataPlugin) Details() models.ActionDetails {
 	params := []models.Param{
 		{
 			Key:         "FlowID",

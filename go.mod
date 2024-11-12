@@ -4,7 +4,7 @@ go 1.23.2
 
 require (
 	github.com/sirupsen/logrus v1.9.3
-	gitlab.justlab.xyz/alertflow-public/runner v0.12.1-beta
+	gitlab.justlab.xyz/alertflow-public/runner v0.12.5-beta
 )
 
 require (

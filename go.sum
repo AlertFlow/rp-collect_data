@@ -28,6 +28,8 @@ gitlab.justlab.xyz/alertflow-public/runner v0.12.0-beta h1:JGj6p5dAUFyVE3GOdHGMX
 gitlab.justlab.xyz/alertflow-public/runner v0.12.0-beta/go.mod h1:nAQbmkSqDvVBeWUNydVVdcGfIAyKoHRt23ttH92AIho=
 gitlab.justlab.xyz/alertflow-public/runner v0.12.1-beta h1:IzQpEEaTXmrW+25HNhah9QvCjHCIqeGnZUm3g0t7mC0=
 gitlab.justlab.xyz/alertflow-public/runner v0.12.1-beta/go.mod h1:nAQbmkSqDvVBeWUNydVVdcGfIAyKoHRt23ttH92AIho=
+gitlab.justlab.xyz/alertflow-public/runner v0.12.5-beta h1:Ks8QEBYRCZWqTqG5ifIqwbxY7JEOhYvQeZFYHVL6wAE=
+gitlab.justlab.xyz/alertflow-public/runner v0.12.5-beta/go.mod h1:nAQbmkSqDvVBeWUNydVVdcGfIAyKoHRt23ttH92AIho=
 go.opentelemetry.io/otel v1.29.0 h1:PdomN/Al4q/lN6iBJEN3AwPvUiHPMlt93c8bqTG5Llw=
 go.opentelemetry.io/otel v1.29.0/go.mod h1:N/WtXPs1CNCUEx+Agz5uouwCba+i+bJGFicT8SR4NP8=
 go.opentelemetry.io/otel v1.32.0 h1:WnBN+Xjcteh0zdk01SVqV55d/m62NJLJdIyb4y/WO5U=
