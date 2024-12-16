@@ -19,7 +19,7 @@ func (p *CollectDataPlugin) Init() models.Plugin {
 	return models.Plugin{
 		Name:    "Collect Data",
 		Type:    "action",
-		Version: "1.0.1",
+		Version: "1.0.4",
 		Creator: "JustNZ",
 	}
 }
