@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"time"
 
-	"gitlab.justlab.xyz/alertflow-public/runner/pkg/executions"
-	"gitlab.justlab.xyz/alertflow-public/runner/pkg/flows"
-	"gitlab.justlab.xyz/alertflow-public/runner/pkg/models"
-	"gitlab.justlab.xyz/alertflow-public/runner/pkg/payloads"
+	"github.com/AlertFlow/runner/pkg/executions"
+	"github.com/AlertFlow/runner/pkg/flows"
+	"github.com/AlertFlow/runner/pkg/models"
+	"github.com/AlertFlow/runner/pkg/payloads"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -19,7 +19,7 @@ func (p *CollectDataPlugin) Init() models.Plugin {
 	return models.Plugin{
 		Name:    "Collect Data",
 		Type:    "action",
-		Version: "1.0.4",
+		Version: "1.0.5",
 		Creator: "JustNZ",
 	}
 }
