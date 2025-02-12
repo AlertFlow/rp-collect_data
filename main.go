@@ -2,66 +2,84 @@ package main
 
 import (
 	"encoding/json"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/AlertFlow/runner/pkg/executions"
 	"github.com/AlertFlow/runner/pkg/flows"
 	"github.com/AlertFlow/runner/pkg/models"
 	"github.com/AlertFlow/runner/pkg/payloads"
+	"github.com/AlertFlow/runner/pkg/protocol"
 
-	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
 
-type CollectDataPlugin struct{}
+func main() {
+	decoder := json.NewDecoder(os.Stdin)
+	encoder := json.NewEncoder(os.Stdout)
 
-func (p *CollectDataPlugin) Init() models.Plugin {
-	return models.Plugin{
-		Name:    "Collect Data",
-		Type:    "action",
-		Version: "1.0.5",
-		Creator: "JustNZ",
+	// Handle graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigChan
+		os.Exit(0)
+	}()
+
+	// Process requests
+	for {
+		var req protocol.Request
+		if err := decoder.Decode(&req); err != nil {
+			os.Exit(1)
+		}
+
+		// Handle the request
+		resp := handle(req)
+
+		if err := encoder.Encode(resp); err != nil {
+			os.Exit(1)
+		}
 	}
 }
 
-func (p *CollectDataPlugin) Details() models.PluginDetails {
-	params := []models.Param{
-		{
-			Key:         "FlowID",
-			Type:        "text",
-			Default:     "00000000-0000-0000-0000-00000000",
-			Required:    true,
-			Description: "The Flow ID to collect data from",
-		},
-		{
-			Key:         "PayloadID",
-			Type:        "text",
-			Default:     "00000000-0000-0000-0000-00000000",
-			Required:    true,
-			Description: "The Payload ID to collect data from",
-		},
-	}
-
-	paramsJSON, err := json.Marshal(params)
-	if err != nil {
-		log.Error(err)
-	}
-
-	return models.PluginDetails{
+func Details() models.Plugin {
+	plugin := models.Plugin{
+		Name:    "Collect Data",
+		Type:    "action",
+		Version: "1.0.6",
+		Author:  "JustNZ",
 		Action: models.ActionDetails{
+			ID:          "collect_data",
 			Name:        "Collect Data",
 			Description: "Collects Flow and Payload data from AlertFlow",
 			Icon:        "solar:inbox-archive-linear",
-			Type:        "collect_data",
 			Category:    "Data",
-			Function:    p.Execute,
-			IsHidden:    true,
-			Params:      json.RawMessage(paramsJSON),
+			Params: []models.Param{
+				{
+					Key:         "FlowID",
+					Type:        "text",
+					Default:     "00000000-0000-0000-0000-00000000",
+					Required:    true,
+					Description: "The Flow ID to collect data from",
+				},
+				{
+					Key:         "PayloadID",
+					Type:        "text",
+					Default:     "00000000-0000-0000-0000-00000000",
+					Required:    true,
+					Description: "The Payload ID to collect data from",
+				},
+			},
 		},
 	}
+
+	return plugin
 }
 
-func (p *CollectDataPlugin) Execute(execution models.Execution, flow models.Flows, payload models.Payload, steps []models.ExecutionSteps, step models.ExecutionSteps, action models.Actions) (data map[string]interface{}, finished bool, canceled bool, no_pattern_match bool, failed bool) {
+func execute(execution models.Execution, step models.ExecutionSteps, action models.Actions) (outputData map[string]interface{}, success bool, err error) {
 	flowID := ""
 	payloadID := ""
 
@@ -79,7 +97,7 @@ func (p *CollectDataPlugin) Execute(execution models.Execution, flow models.Flow
 		}
 	}
 
-	err := executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
+	err = executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
 		ID:             step.ID,
 		ActionID:       action.ID.String(),
 		ActionMessages: []string{"Collecting data from AlertFlow"},
@@ -92,7 +110,7 @@ func (p *CollectDataPlugin) Execute(execution models.Execution, flow models.Flow
 	}
 
 	// Get Flow Data
-	flow, err = flows.GetFlowData(flowID)
+	flow, err := flows.GetFlowData(flowID)
 	if err != nil {
 		err := executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
 			ID:             step.ID,
@@ -106,7 +124,7 @@ func (p *CollectDataPlugin) Execute(execution models.Execution, flow models.Flow
 			log.Error("Error updating step: ", err)
 		}
 
-		return nil, false, false, false, true
+		return nil, false, err
 	}
 
 	err = executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
@@ -118,7 +136,7 @@ func (p *CollectDataPlugin) Execute(execution models.Execution, flow models.Flow
 	}
 
 	// Get Payload Data
-	payload, err = payloads.GetData(payloadID)
+	payload, err := payloads.GetData(payloadID)
 	if err != nil {
 		err := executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
 			ID:             step.ID,
@@ -132,7 +150,7 @@ func (p *CollectDataPlugin) Execute(execution models.Execution, flow models.Flow
 			log.Error("Error updating step: ", err)
 		}
 
-		return nil, false, false, false, true
+		return nil, false, err
 	}
 
 	err = executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
@@ -154,9 +172,35 @@ func (p *CollectDataPlugin) Execute(execution models.Execution, flow models.Flow
 		log.Error("Error updating step: ", err)
 	}
 
-	return map[string]interface{}{"flow": flow, "payload": payload}, true, false, false, false
+	return map[string]interface{}{"flow": flow, "payload": payload}, true, nil
 }
 
-func (p *CollectDataPlugin) Handle(context *gin.Context) {}
+func handle(req protocol.Request) protocol.Response {
+	switch req.Action {
+	case "details":
+		return protocol.Response{
+			Success: true,
+			Plugin:  Details(),
+		}
 
-var Plugin CollectDataPlugin
+	case "execute":
+		outputData, success, err := execute(req.Data["execution"].(models.Execution), req.Data["step"].(models.ExecutionSteps), req.Data["action"].(models.Actions))
+		if err != nil {
+			return protocol.Response{
+				Success: false,
+				Error:   err.Error(),
+			}
+		}
+
+		return protocol.Response{
+			Success: success,
+			Data:    outputData,
+		}
+
+	default:
+		return protocol.Response{
+			Success: false,
+			Error:   "unknown action",
+		}
+	}
+}
