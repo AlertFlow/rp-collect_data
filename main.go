@@ -12,8 +12,6 @@ import (
 	"github.com/AlertFlow/runner/pkg/models"
 	"github.com/AlertFlow/runner/pkg/payloads"
 	"github.com/AlertFlow/runner/pkg/protocol"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -106,7 +104,7 @@ func execute(execution models.Execution, step models.ExecutionSteps, action mode
 		StartedAt:      time.Now(),
 	})
 	if err != nil {
-		log.Error("Error updating step: ", err)
+		return nil, false, err
 	}
 
 	// Get Flow Data
@@ -121,7 +119,7 @@ func execute(execution models.Execution, step models.ExecutionSteps, action mode
 			FinishedAt:     time.Now(),
 		})
 		if err != nil {
-			log.Error("Error updating step: ", err)
+			return nil, false, err
 		}
 
 		return nil, false, err
@@ -132,7 +130,7 @@ func execute(execution models.Execution, step models.ExecutionSteps, action mode
 		ActionMessages: []string{"Flow Data collected"},
 	})
 	if err != nil {
-		log.Error("Error updating step: ", err)
+		return nil, false, err
 	}
 
 	// Get Payload Data
@@ -147,7 +145,7 @@ func execute(execution models.Execution, step models.ExecutionSteps, action mode
 			FinishedAt:     time.Now(),
 		})
 		if err != nil {
-			log.Error("Error updating step: ", err)
+			return nil, false, err
 		}
 
 		return nil, false, err
@@ -158,7 +156,7 @@ func execute(execution models.Execution, step models.ExecutionSteps, action mode
 		ActionMessages: []string{"Payload Data collected"},
 	})
 	if err != nil {
-		log.Error("Error updating step: ", err)
+		return nil, false, err
 	}
 
 	err = executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
@@ -169,7 +167,7 @@ func execute(execution models.Execution, step models.ExecutionSteps, action mode
 		FinishedAt:     time.Now(),
 	})
 	if err != nil {
-		log.Error("Error updating step: ", err)
+		return nil, false, err
 	}
 
 	return map[string]interface{}{"flow": flow, "payload": payload}, true, nil
