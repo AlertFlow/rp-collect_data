@@ -54,6 +54,13 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 		}
 	}
 
+	if flowID == "" || payloadID == "" {
+		return plugins.Response{
+			Success: false,
+			Error:   "FlowID and PayloadID are required",
+		}, nil
+	}
+
 	err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 		ID:        request.Step.ID,
 		Messages:  []string{"Collecting data from AlertFlow"},
