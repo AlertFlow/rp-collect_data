@@ -68,16 +68,6 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 		}, error(fmt.Errorf("FlowID and PayloadID are required"))
 	}
 
-	if request.Step.Action.Name == "" || request.Step.Action.Icon == "" {
-		pluginInfo, _ := p.Info()
-
-		request.Step.Action.Name = pluginInfo.Actions.Name
-		request.Step.Action.Description = pluginInfo.Actions.Description
-		request.Step.Action.Version = pluginInfo.Version
-		request.Step.Action.Category = pluginInfo.Actions.Category
-		request.Step.Action.Icon = pluginInfo.Actions.Icon
-	}
-
 	err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 		ID:        request.Step.ID,
 		Messages:  []string{"Collecting data from AlertFlow"},
