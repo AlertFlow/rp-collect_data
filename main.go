@@ -58,7 +58,7 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 		return plugins.Response{
 			Success: false,
 			Error:   "FlowID and PayloadID are required",
-		}, nil
+		}, error(fmt.Errorf("FlowID and PayloadID are required"))
 	}
 
 	err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
