@@ -55,6 +55,13 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 	}
 
 	if flowID == "" || payloadID == "" {
+		_ = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
+			ID:         request.Step.ID,
+			Messages:   []string{"FlowID and PayloadID are required"},
+			Status:     "error",
+			FinishedAt: time.Now(),
+		})
+
 		return plugins.Response{
 			Success: false,
 			Error:   "FlowID and PayloadID are required",
