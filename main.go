@@ -1,61 +1,205 @@
 package main
 
 import (
-	"encoding/json"
-	"os"
-	"os/signal"
-	"syscall"
+	"fmt"
+	"net/rpc"
+	"strconv"
 	"time"
 
 	"github.com/AlertFlow/runner/pkg/executions"
 	"github.com/AlertFlow/runner/pkg/flows"
-	"github.com/AlertFlow/runner/pkg/models"
 	"github.com/AlertFlow/runner/pkg/payloads"
-	"github.com/AlertFlow/runner/pkg/protocol"
+	"github.com/AlertFlow/runner/pkg/plugins"
+
+	"github.com/v1Flows/alertFlow/services/backend/pkg/models"
+
+	"github.com/hashicorp/go-plugin"
 )
 
-func main() {
-	decoder := json.NewDecoder(os.Stdin)
-	encoder := json.NewEncoder(os.Stdout)
-
-	// Handle graceful shutdown
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-sigChan
-		os.Exit(0)
-	}()
-
-	// Process requests
-	for {
-		var req protocol.Request
-		if err := decoder.Decode(&req); err != nil {
-			os.Exit(1)
-		}
-
-		// Handle the request
-		resp := handle(req)
-
-		if err := encoder.Encode(resp); err != nil {
-			os.Exit(1)
-		}
-	}
+type Receiver struct {
+	Receiver string `json:"receiver"`
 }
 
-func Details() models.Plugin {
-	plugin := models.Plugin{
+// CollectDataActionPlugin is an implementation of the Plugin interface
+type CollectDataActionPlugin struct{}
+
+func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Response, error) {
+	flowID := ""
+	payloadID := ""
+	logData := false
+
+	if val, ok := request.Args["FlowID"]; ok {
+		flowID = val
+	}
+
+	if val, ok := request.Args["PayloadID"]; ok {
+		payloadID = val
+	}
+
+	if val, ok := request.Args["LogData"]; ok {
+		logData, _ = strconv.ParseBool(val)
+	}
+
+	if request.Step.Action.Params != nil && flowID == "" && payloadID == "" {
+		for _, param := range request.Step.Action.Params {
+			if param.Key == "LogData" {
+				logData, _ = strconv.ParseBool(param.Value)
+			}
+			if param.Key == "FlowID" {
+				flowID = param.Value
+			}
+			if param.Key == "PayloadID" {
+				payloadID = param.Value
+			}
+		}
+	}
+
+	err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
+		ID:        request.Step.ID,
+		Messages:  []string{"Collecting data from AlertFlow"},
+		Status:    "running",
+		StartedAt: time.Now(),
+	})
+	if err != nil {
+		return plugins.Response{
+			Success: false,
+			Error:   err.Error(),
+		}, err
+	}
+
+	// Get Flow Data
+	flow, err := flows.GetFlowData(request.Config, flowID)
+	if err != nil {
+		err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
+			ID: request.Step.ID,
+			Messages: []string{
+				"Failed to get Flow Data",
+				err.Error(),
+			},
+			Status:     "error",
+			FinishedAt: time.Now(),
+		})
+		if err != nil {
+			return plugins.Response{
+				Success: false,
+				Error:   err.Error(),
+			}, err
+		}
+
+		return plugins.Response{
+			Success: false,
+			Error:   err.Error(),
+		}, err
+	}
+
+	err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
+		ID:       request.Step.ID,
+		Messages: []string{"Flow Data collected"},
+	})
+	if err != nil {
+		return plugins.Response{
+			Success: false,
+			Error:   err.Error(),
+		}, err
+	}
+
+	// Get Payload Data
+	payload, err := payloads.GetData(request.Config, payloadID)
+	if err != nil {
+		err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
+			ID: request.Step.ID,
+			Messages: []string{
+				"Failed to get Payload Data",
+				err.Error(),
+			},
+			Status:     "error",
+			FinishedAt: time.Now(),
+		})
+		if err != nil {
+			return plugins.Response{
+				Success: false,
+				Error:   err.Error(),
+			}, err
+		}
+
+		return plugins.Response{
+			Success: false,
+			Error:   err.Error(),
+		}, err
+	}
+
+	err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
+		ID:       request.Step.ID,
+		Messages: []string{"Payload Data collected"},
+	})
+	if err != nil {
+		return plugins.Response{
+			Success: false,
+			Error:   err.Error(),
+		}, err
+	}
+
+	finalMessages := []string{}
+
+	if logData {
+		finalMessages = append(finalMessages, "Data collection completed")
+		finalMessages = append(finalMessages, "Flow Data:")
+		finalMessages = append(finalMessages, fmt.Sprintf("%v", flow))
+		finalMessages = append(finalMessages, "Payload Data:")
+		finalMessages = append(finalMessages, fmt.Sprintf("%v", payload))
+	} else {
+		finalMessages = append(finalMessages, "Data collection completed")
+	}
+
+	err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
+		ID:         request.Step.ID,
+		Messages:   finalMessages,
+		Status:     "finished",
+		FinishedAt: time.Now(),
+	})
+	if err != nil {
+		return plugins.Response{
+			Success: false,
+			Error:   err.Error(),
+		}, err
+	}
+
+	return plugins.Response{
+		Data: map[string]interface{}{
+			"flow":    flow,
+			"payload": payload,
+		},
+		Success: true,
+	}, nil
+}
+
+func (p *CollectDataActionPlugin) HandlePayload(request plugins.PayloadHandlerRequest) (plugins.Response, error) {
+	return plugins.Response{
+		Success: false,
+		Error:   "Not implemented",
+	}, nil
+}
+
+func (p *CollectDataActionPlugin) Info() (models.Plugins, error) {
+	var plugin = models.Plugins{
 		Name:    "Collect Data",
 		Type:    "action",
-		Version: "1.0.6",
+		Version: "1.1.0",
 		Author:  "JustNZ",
-		Action: models.ActionDetails{
-			ID:          "collect_data",
+		Actions: models.Actions{
 			Name:        "Collect Data",
 			Description: "Collects Flow and Payload data from AlertFlow",
+			Plugin:      "collect_data",
 			Icon:        "solar:inbox-archive-linear",
 			Category:    "Data",
-			Params: []models.Param{
+			Params: []models.Params{
+				{
+					Key:         "LogData",
+					Type:        "boolean",
+					Default:     "false",
+					Required:    false,
+					Description: "Show collected data in the output messages",
+				},
 				{
 					Key:         "FlowID",
 					Type:        "text",
@@ -72,133 +216,58 @@ func Details() models.Plugin {
 				},
 			},
 		},
+		Endpoints: models.PayloadEndpoints{},
 	}
 
-	return plugin
+	return plugin, nil
 }
 
-func execute(execution models.Execution, step models.ExecutionSteps, action models.Actions) (outputData map[string]interface{}, success bool, err error) {
-	flowID := ""
-	payloadID := ""
-
-	if action.Params == nil {
-		flowID = execution.FlowID
-		payloadID = execution.PayloadID
-	} else {
-		for _, param := range action.Params {
-			if param.Key == "FlowID" {
-				flowID = param.Value
-			}
-			if param.Key == "PayloadID" {
-				payloadID = param.Value
-			}
-		}
-	}
-
-	err = executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
-		ID:             step.ID,
-		ActionID:       action.ID.String(),
-		ActionMessages: []string{"Collecting data from AlertFlow"},
-		Pending:        false,
-		Running:        true,
-		StartedAt:      time.Now(),
-	})
-	if err != nil {
-		return nil, false, err
-	}
-
-	// Get Flow Data
-	flow, err := flows.GetFlowData(flowID)
-	if err != nil {
-		err := executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
-			ID:             step.ID,
-			ActionMessages: []string{"Failed to get Flow Data"},
-			Error:          true,
-			Finished:       true,
-			Running:        false,
-			FinishedAt:     time.Now(),
-		})
-		if err != nil {
-			return nil, false, err
-		}
-
-		return nil, false, err
-	}
-
-	err = executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
-		ID:             step.ID,
-		ActionMessages: []string{"Flow Data collected"},
-	})
-	if err != nil {
-		return nil, false, err
-	}
-
-	// Get Payload Data
-	payload, err := payloads.GetData(payloadID)
-	if err != nil {
-		err := executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
-			ID:             step.ID,
-			ActionMessages: []string{"Failed to get Payload Data"},
-			Error:          true,
-			Finished:       true,
-			Running:        false,
-			FinishedAt:     time.Now(),
-		})
-		if err != nil {
-			return nil, false, err
-		}
-
-		return nil, false, err
-	}
-
-	err = executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
-		ID:             step.ID,
-		ActionMessages: []string{"Payload Data collected"},
-	})
-	if err != nil {
-		return nil, false, err
-	}
-
-	err = executions.UpdateStep(execution.ID.String(), models.ExecutionSteps{
-		ID:             step.ID,
-		ActionMessages: []string{"Data collection completed"},
-		Running:        false,
-		Finished:       true,
-		FinishedAt:     time.Now(),
-	})
-	if err != nil {
-		return nil, false, err
-	}
-
-	return map[string]interface{}{"flow": flow, "payload": payload}, true, nil
+// PluginRPCServer is the RPC server for Plugin
+type PluginRPCServer struct {
+	Impl plugins.Plugin
 }
 
-func handle(req protocol.Request) protocol.Response {
-	switch req.Action {
-	case "details":
-		return protocol.Response{
-			Success: true,
-			Plugin:  Details(),
-		}
+func (s *PluginRPCServer) ExecuteTask(request plugins.ExecuteTaskRequest, resp *plugins.Response) error {
+	result, err := s.Impl.ExecuteTask(request)
+	*resp = result
+	return err
+}
 
-	case "execute":
-		outputData, success, err := execute(req.Data["execution"].(models.Execution), req.Data["step"].(models.ExecutionSteps), req.Data["action"].(models.Actions))
-		if err != nil {
-			return protocol.Response{
-				Success: false,
-				Error:   err.Error(),
-			}
-		}
+func (s *PluginRPCServer) HandlePayload(request plugins.PayloadHandlerRequest, resp *plugins.Response) error {
+	result, err := s.Impl.HandlePayload(request)
+	*resp = result
+	return err
+}
 
-		return protocol.Response{
-			Success: success,
-			Data:    outputData,
-		}
+func (s *PluginRPCServer) Info(args interface{}, resp *models.Plugins) error {
+	result, err := s.Impl.Info()
+	*resp = result
+	return err
+}
 
-	default:
-		return protocol.Response{
-			Success: false,
-			Error:   "unknown action",
-		}
-	}
+// PluginServer is the implementation of plugin.Plugin interface
+type PluginServer struct {
+	Impl plugins.Plugin
+}
+
+func (p *PluginServer) Server(*plugin.MuxBroker) (interface{}, error) {
+	return &PluginRPCServer{Impl: p.Impl}, nil
+}
+
+func (p *PluginServer) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
+	return &plugins.PluginRPC{Client: c}, nil
+}
+
+func main() {
+	plugin.Serve(&plugin.ServeConfig{
+		HandshakeConfig: plugin.HandshakeConfig{
+			ProtocolVersion:  1,
+			MagicCookieKey:   "PLUGIN_MAGIC_COOKIE",
+			MagicCookieValue: "hello",
+		},
+		Plugins: map[string]plugin.Plugin{
+			"plugin": &PluginServer{Impl: &CollectDataActionPlugin{}},
+		},
+		GRPCServer: plugin.DefaultGRPCServer,
+	})
 }
