@@ -1,5 +1,5 @@
-github.com/AlertFlow/runner v1.0.0-beta1.0.20250217072840-3efcd92eea8f h1:rnoSr1xDYeQfqSh5DyS72hYr5ZoFoNPAEZbAq1kMJ6Y=
-github.com/AlertFlow/runner v1.0.0-beta1.0.20250217072840-3efcd92eea8f/go.mod h1:MnFETwYtj0c/XRFrkY5WWjxKnld7/3zyd3II42WBxbQ=
+github.com/AlertFlow/runner v1.0.0-beta1.0.20250217080534-d90343eb8b40 h1:ytAkHE85Ow/f1yUZCC70nqetYMplSh5zKQPv7VhDt98=
+github.com/AlertFlow/runner v1.0.0-beta1.0.20250217080534-d90343eb8b40/go.mod h1:MnFETwYtj0c/XRFrkY5WWjxKnld7/3zyd3II42WBxbQ=
 github.com/bufbuild/protocompile v0.4.0 h1:LbFKd2XowZvQ/kajzguUp2DC9UEIQhIq77fZZlaQsNA=
 github.com/bufbuild/protocompile v0.4.0/go.mod h1:3v93+mbWn/v3xzN+31nwkJfrEpAUwp+BagBSZWx+TP8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

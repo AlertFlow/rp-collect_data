@@ -3,7 +3,7 @@ module github.com/AlertFlow/rp-collect-data
 go 1.23
 
 require (
-	github.com/AlertFlow/runner v1.0.0-beta1.0.20250217072840-3efcd92eea8f
+	github.com/AlertFlow/runner v1.0.0-beta1.0.20250217080534-d90343eb8b40
 	github.com/hashicorp/go-plugin v1.6.3
 	github.com/v1Flows/alertFlow/services/backend v0.0.0-20250216182013-403162bb3661
 )

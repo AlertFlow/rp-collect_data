@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/gob"
 	"errors"
 	"fmt"
 	"net/rpc"
@@ -172,10 +171,8 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 	}
 
 	return plugins.Response{
-		Data: map[string]interface{}{
-			"flow":    fmt.Sprintf("%v", flow),
-			"payload": fmt.Sprintf("%v", payload),
-		},
+		Flow:    &flow,
+		Payload: &payload,
 		Success: true,
 	}, nil
 }
@@ -265,13 +262,6 @@ func (p *PluginServer) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, 
 }
 
 func main() {
-	// Register the models.Flows type with gob
-	gob.Register(models.Flows{})
-	gob.Register(models.Payloads{})
-	gob.Register(models.ExecutionSteps{}) // Register nested types
-	gob.Register(models.Actions{})
-	gob.Register(models.Pattern{})
-
 	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: plugin.HandshakeConfig{
 			ProtocolVersion:  1,
