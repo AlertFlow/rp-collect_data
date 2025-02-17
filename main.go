@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"net/rpc"
@@ -264,6 +265,10 @@ func (p *PluginServer) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, 
 }
 
 func main() {
+	// Register the models.Flows type with gob
+	gob.Register(models.Flows{})
+	gob.Register(models.Payloads{})
+
 	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: plugin.HandshakeConfig{
 			ProtocolVersion:  1,
