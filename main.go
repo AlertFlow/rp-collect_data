@@ -21,10 +21,10 @@ type Receiver struct {
 	Receiver string `json:"receiver"`
 }
 
-// CollectDataActionPlugin is an implementation of the Plugin interface
-type CollectDataActionPlugin struct{}
+// Plugin is an implementation of the Plugin interface
+type Plugin struct{}
 
-func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Response, error) {
+func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Response, error) {
 	flowID := ""
 	payloadID := ""
 	logData := false
@@ -161,7 +161,7 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 	err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 		ID:         request.Step.ID,
 		Messages:   finalMessages,
-		Status:     "finished",
+		Status:     "success",
 		FinishedAt: time.Now(),
 	})
 	if err != nil {
@@ -177,13 +177,13 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 	}, nil
 }
 
-func (p *CollectDataActionPlugin) HandlePayload(request plugins.PayloadHandlerRequest) (plugins.Response, error) {
+func (p *Plugin) HandlePayload(request plugins.PayloadHandlerRequest) (plugins.Response, error) {
 	return plugins.Response{
 		Success: false,
 	}, errors.New("not implemented")
 }
 
-func (p *CollectDataActionPlugin) Info() (models.Plugins, error) {
+func (p *Plugin) Info() (models.Plugins, error) {
 	var plugin = models.Plugins{
 		Name:    "Collect Data",
 		Type:    "action",
@@ -269,7 +269,7 @@ func main() {
 			MagicCookieValue: "hello",
 		},
 		Plugins: map[string]plugin.Plugin{
-			"plugin": &PluginServer{Impl: &CollectDataActionPlugin{}},
+			"plugin": &PluginServer{Impl: &Plugin{}},
 		},
 		GRPCServer: plugin.DefaultGRPCServer,
 	})
