@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/rpc"
 	"strconv"
@@ -64,8 +65,7 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 
 		return plugins.Response{
 			Success: false,
-			Error:   "FlowID and PayloadID are required",
-		}, error(fmt.Errorf("FlowID and PayloadID are required"))
+		}, errors.New("flowid and payloadid are required")
 	}
 
 	err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
@@ -77,7 +77,6 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 	if err != nil {
 		return plugins.Response{
 			Success: false,
-			Error:   err.Error(),
 		}, err
 	}
 
@@ -96,13 +95,11 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 		if err != nil {
 			return plugins.Response{
 				Success: false,
-				Error:   err.Error(),
 			}, err
 		}
 
 		return plugins.Response{
 			Success: false,
-			Error:   err.Error(),
 		}, err
 	}
 
@@ -113,7 +110,6 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 	if err != nil {
 		return plugins.Response{
 			Success: false,
-			Error:   err.Error(),
 		}, err
 	}
 
@@ -132,13 +128,11 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 		if err != nil {
 			return plugins.Response{
 				Success: false,
-				Error:   err.Error(),
 			}, err
 		}
 
 		return plugins.Response{
 			Success: false,
-			Error:   err.Error(),
 		}, err
 	}
 
@@ -149,7 +143,6 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 	if err != nil {
 		return plugins.Response{
 			Success: false,
-			Error:   err.Error(),
 		}, err
 	}
 
@@ -174,15 +167,12 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 	if err != nil {
 		return plugins.Response{
 			Success: false,
-			Error:   err.Error(),
 		}, err
 	}
 
 	return plugins.Response{
-		Data: map[string]interface{}{
-			"flow":    flow,
-			"payload": payload,
-		},
+		Flow:    &flow,
+		Payload: &payload,
 		Success: true,
 	}, nil
 }
@@ -190,8 +180,7 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 func (p *CollectDataActionPlugin) HandlePayload(request plugins.PayloadHandlerRequest) (plugins.Response, error) {
 	return plugins.Response{
 		Success: false,
-		Error:   "Not implemented",
-	}, nil
+	}, errors.New("not implemented")
 }
 
 func (p *CollectDataActionPlugin) Info() (models.Plugins, error) {
