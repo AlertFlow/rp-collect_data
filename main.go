@@ -173,8 +173,8 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 
 	return plugins.Response{
 		Data: map[string]interface{}{
-			"flow":    flow,
-			"payload": payload,
+			"flow":    fmt.Sprintf("%v", flow),
+			"payload": fmt.Sprintf("%v", payload),
 		},
 		Success: true,
 	}, nil
