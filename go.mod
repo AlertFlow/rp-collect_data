@@ -1,4 +1,4 @@
-module github.com/AlertFlow/rp-collect-data
+module github.com/AlertFlow/rp-collect_data
 
 go 1.23
 
