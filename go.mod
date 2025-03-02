@@ -3,9 +3,9 @@ module github.com/AlertFlow/rp-collect_data
 go 1.23.5
 
 require (
-	github.com/AlertFlow/runner v1.0.0-beta1.0.20250302110434-77f723532cb3
+	github.com/AlertFlow/runner v1.0.0-beta5
 	github.com/hashicorp/go-plugin v1.6.3
-	github.com/v1Flows/alertFlow/services/backend v0.0.0-20250302110950-b1e9d2c35e40
+	github.com/v1Flows/alertFlow/services/backend v0.0.0-20250302111503-8b6f6e8b260d
 )
 
 require (
@@ -14,7 +14,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/hashicorp/go-hclog v1.5.0 // indirect
+	github.com/hashicorp/go-hclog v1.6.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
