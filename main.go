@@ -187,7 +187,7 @@ func (p *Plugin) Info() (models.Plugins, error) {
 	var plugin = models.Plugins{
 		Name:    "Collect Data",
 		Type:    "action",
-		Version: "1.1.0",
+		Version: "1.1.1",
 		Author:  "JustNZ",
 		Actions: models.Actions{
 			Name:        "Collect Data",
