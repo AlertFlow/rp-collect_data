@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/AlertFlow/runner/pkg/alerts"
 	"github.com/AlertFlow/runner/pkg/executions"
 	"github.com/AlertFlow/runner/pkg/flows"
-	"github.com/AlertFlow/runner/pkg/payloads"
 	"github.com/AlertFlow/runner/pkg/plugins"
 
 	"github.com/v1Flows/alertFlow/services/backend/pkg/models"
@@ -26,22 +26,22 @@ type Plugin struct{}
 
 func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Response, error) {
 	flowID := ""
-	payloadID := ""
+	alertID := ""
 	logData := false
 
 	if val, ok := request.Args["FlowID"]; ok {
 		flowID = val
 	}
 
-	if val, ok := request.Args["PayloadID"]; ok {
-		payloadID = val
+	if val, ok := request.Args["AlertID"]; ok {
+		alertID = val
 	}
 
 	if val, ok := request.Args["LogData"]; ok {
 		logData, _ = strconv.ParseBool(val)
 	}
 
-	if request.Step.Action.Params != nil && flowID == "" && payloadID == "" {
+	if request.Step.Action.Params != nil && flowID == "" && alertID == "" {
 		for _, param := range request.Step.Action.Params {
 			if param.Key == "LogData" {
 				logData, _ = strconv.ParseBool(param.Value)
@@ -49,23 +49,23 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 			if param.Key == "FlowID" {
 				flowID = param.Value
 			}
-			if param.Key == "PayloadID" {
-				payloadID = param.Value
+			if param.Key == "AlertID" {
+				alertID = param.Value
 			}
 		}
 	}
 
-	if flowID == "" || payloadID == "" {
+	if flowID == "" || alertID == "" {
 		_ = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 			ID:         request.Step.ID,
-			Messages:   []string{"FlowID and PayloadID are required"},
+			Messages:   []string{"FlowID and AlertID are required"},
 			Status:     "error",
 			FinishedAt: time.Now(),
 		})
 
 		return plugins.Response{
 			Success: false,
-		}, errors.New("flowid and payloadid are required")
+		}, errors.New("flowid and alertid are required")
 	}
 
 	err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
@@ -113,13 +113,13 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		}, err
 	}
 
-	// Get Payload Data
-	payload, err := payloads.GetData(request.Config, payloadID)
+	// Get Alert Data
+	alert, err := alerts.GetData(request.Config, alertID)
 	if err != nil {
 		err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 			ID: request.Step.ID,
 			Messages: []string{
-				"Failed to get Payload Data",
+				"Failed to get Alert Data",
 				err.Error(),
 			},
 			Status:     "error",
@@ -138,7 +138,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 
 	err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 		ID:       request.Step.ID,
-		Messages: []string{"Payload Data collected"},
+		Messages: []string{"Alert Data collected"},
 	})
 	if err != nil {
 		return plugins.Response{
@@ -152,8 +152,8 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		finalMessages = append(finalMessages, "Data collection completed")
 		finalMessages = append(finalMessages, "Flow Data:")
 		finalMessages = append(finalMessages, fmt.Sprintf("%v", flow))
-		finalMessages = append(finalMessages, "Payload Data:")
-		finalMessages = append(finalMessages, fmt.Sprintf("%v", payload))
+		finalMessages = append(finalMessages, "Alert Data:")
+		finalMessages = append(finalMessages, fmt.Sprintf("%v", alert))
 	} else {
 		finalMessages = append(finalMessages, "Data collection completed")
 	}
@@ -172,12 +172,12 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 
 	return plugins.Response{
 		Flow:    &flow,
-		Payload: &payload,
+		Alert:   &alert,
 		Success: true,
 	}, nil
 }
 
-func (p *Plugin) HandlePayload(request plugins.PayloadHandlerRequest) (plugins.Response, error) {
+func (p *Plugin) HandleAlert(request plugins.AlertHandlerRequest) (plugins.Response, error) {
 	return plugins.Response{
 		Success: false,
 	}, errors.New("not implemented")
@@ -191,7 +191,7 @@ func (p *Plugin) Info() (models.Plugins, error) {
 		Author:  "JustNZ",
 		Actions: models.Actions{
 			Name:        "Collect Data",
-			Description: "Collects Flow and Payload data from AlertFlow",
+			Description: "Collects Flow and Alert data from AlertFlow",
 			Plugin:      "collect_data",
 			Icon:        "solar:inbox-archive-linear",
 			Category:    "Data",
@@ -211,15 +211,15 @@ func (p *Plugin) Info() (models.Plugins, error) {
 					Description: "The Flow ID to collect data from",
 				},
 				{
-					Key:         "PayloadID",
+					Key:         "AlertID",
 					Type:        "text",
 					Default:     "00000000-0000-0000-0000-00000000",
 					Required:    true,
-					Description: "The Payload ID to collect data from",
+					Description: "The Alert ID to collect data from",
 				},
 			},
 		},
-		Endpoints: models.PayloadEndpoints{},
+		Endpoints: models.AlertEndpoints{},
 	}
 
 	return plugin, nil
@@ -236,8 +236,8 @@ func (s *PluginRPCServer) ExecuteTask(request plugins.ExecuteTaskRequest, resp *
 	return err
 }
 
-func (s *PluginRPCServer) HandlePayload(request plugins.PayloadHandlerRequest, resp *plugins.Response) error {
-	result, err := s.Impl.HandlePayload(request)
+func (s *PluginRPCServer) HandleAlert(request plugins.AlertHandlerRequest, resp *plugins.Response) error {
+	result, err := s.Impl.HandleAlert(request)
 	*resp = result
 	return err
 }
