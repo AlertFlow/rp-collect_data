@@ -55,7 +55,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		}
 	}
 
-	if flowID == "" || alertID == "" {
+	if flowID == "" || (request.Platform == "alertflow" && alertID == "") {
 		_ = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 			ID: request.Step.ID,
 			Messages: []models.Message{
@@ -78,7 +78,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		Messages: []models.Message{
 			{
 				Title: "Collecting Data",
-				Lines: []string{"Collecting data from AlertFlow"},
+				Lines: []string{"Collecting data from " + request.Platform},
 			},
 		},
 		Status:    "running",
@@ -206,7 +206,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}, nil
 }
 
-func (p *Plugin) HandleAlert(request plugins.AlertHandlerRequest) (plugins.Response, error) {
+func (p *Plugin) EndpointRequest(request plugins.EndpointRequest) (plugins.Response, error) {
 	return plugins.Response{
 		Success: false,
 	}, errors.New("not implemented")
@@ -243,8 +243,8 @@ func (p *Plugin) Info() (models.Plugin, error) {
 					Key:         "AlertID",
 					Type:        "text",
 					Default:     "00000000-0000-0000-0000-00000000",
-					Required:    true,
-					Description: "The Alert ID to collect data from",
+					Required:    false,
+					Description: "The Alert ID to collect data from. Required for AlertFlow platform",
 				},
 			},
 		},
@@ -265,8 +265,8 @@ func (s *PluginRPCServer) ExecuteTask(request plugins.ExecuteTaskRequest, resp *
 	return err
 }
 
-func (s *PluginRPCServer) HandleAlert(request plugins.AlertHandlerRequest, resp *plugins.Response) error {
-	result, err := s.Impl.HandleAlert(request)
+func (s *PluginRPCServer) EndpointRequest(request plugins.EndpointRequest, resp *plugins.Response) error {
+	result, err := s.Impl.EndpointRequest(request)
 	*resp = result
 	return err
 }
