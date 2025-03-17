@@ -89,10 +89,12 @@ github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc h1:9lRDQMhESg+zvGYm
 github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc/go.mod h1:bciPuU6GHm1iF1pBvUfxfsH0Wmnc2VbpgvbI9ZWuIRs=
 github.com/uptrace/bun v1.2.11 h1:l9dTymsdZZAoSZ1+Qo3utms0RffgkDbIv+1UGk8N1wQ=
 github.com/uptrace/bun v1.2.11/go.mod h1:ww5G8h59UrOnCHmZ8O1I/4Djc7M/Z3E+EWFS2KLB6dQ=
-github.com/v1Flows/alertFlow/services/backend v0.0.0-20250308205151-c6c9aecb576f h1:PC+f6imP5XzV+XFWqzmmcTGuZ//you8jhZpwpNuu63U=
-github.com/v1Flows/alertFlow/services/backend v0.0.0-20250308205151-c6c9aecb576f/go.mod h1:ognfZmJlk8yQVXuDnSgzhS7WlJznrxTu7Wwjs02fnkk=
-github.com/v1Flows/runner v1.0.0-beta9 h1:CQj+VHilOk2IgrL/pQsieIwpFj7Gus1GYS0w5tu7fzg=
-github.com/v1Flows/runner v1.0.0-beta9/go.mod h1:eIfUzFZyFdJRJqOSdwPWzwjUSV4eWJFgThderYhBtCA=
+github.com/v1Flows/alertFlow/services/backend v0.0.0-20250317112742-7a11f04dd445 h1:o1WaAweRrGc6Yz4G3DTE9cr6sFul1TJ9k71yIbECQYQ=
+github.com/v1Flows/alertFlow/services/backend v0.0.0-20250317112742-7a11f04dd445/go.mod h1:wN72OUmADQ95eNYyiYM4oa6FOnvoCBRljzsGQGdvaIA=
+github.com/v1Flows/runner v1.0.0-beta1.0.20250317155614-09619030c59e h1:mYx5yBsTraPL/2R3aa1gzJqsVL0HLcm58aRLgi3Sk54=
+github.com/v1Flows/runner v1.0.0-beta1.0.20250317155614-09619030c59e/go.mod h1:LUk/sF0Q+TuN5XO8yS+XsP4li9Bt04LR7bojWEhZdoM=
+github.com/v1Flows/shared-library v1.0.3 h1:j2K026jOvQ8wW/DFXphtXKZGuRTIrIUK2hojb79aQmY=
+github.com/v1Flows/shared-library v1.0.3/go.mod h1:UVP6m6Nri6JC3L0xS3wkbqGvfQJ5fsYIJx81Gfj1TFw=
 github.com/vmihailenco/msgpack/v5 v5.4.1 h1:cQriyiUvjTwOHg8QZaPihLWeRAAVoCpE00IUPn0Bjt8=
 github.com/vmihailenco/msgpack/v5 v5.4.1/go.mod h1:GaZTsDaehaPpQVyxrf5mtQlH+pc21PIudVV/E3rRQok=
 github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAhO7/IwNM9g=

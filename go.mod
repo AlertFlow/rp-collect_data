@@ -1,11 +1,11 @@
 module github.com/AlertFlow/rp-collect_data
 
-go 1.23.5
+go 1.24.0
 
 require (
 	github.com/hashicorp/go-plugin v1.6.3
-	github.com/v1Flows/alertFlow/services/backend v0.0.0-20250308205151-c6c9aecb576f
-	github.com/v1Flows/runner v1.0.0-beta9
+	github.com/v1Flows/alertFlow/services/backend v0.0.0-20250317112742-7a11f04dd445
+	github.com/v1Flows/runner v1.0.0-beta1.0.20250317155614-09619030c59e
 )
 
 require (
@@ -36,6 +36,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/uptrace/bun v1.2.11 // indirect
+	github.com/v1Flows/shared-library v1.0.3 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect

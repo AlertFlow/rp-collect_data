@@ -12,7 +12,7 @@ import (
 	"github.com/v1Flows/runner/pkg/flows"
 	"github.com/v1Flows/runner/pkg/plugins"
 
-	"github.com/v1Flows/alertFlow/services/backend/pkg/models"
+	"github.com/v1Flows/shared-library/pkg/models"
 
 	"github.com/hashicorp/go-plugin"
 )
@@ -57,8 +57,13 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 
 	if flowID == "" || alertID == "" {
 		_ = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-			ID:         request.Step.ID,
-			Messages:   []string{"FlowID and AlertID are required"},
+			ID: request.Step.ID,
+			Messages: []models.Message{
+				{
+					Title: "Collecting Data",
+					Lines: []string{"FlowID and AlertID are required"},
+				},
+			},
 			Status:     "error",
 			FinishedAt: time.Now(),
 		})
@@ -69,8 +74,13 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-		ID:        request.Step.ID,
-		Messages:  []string{"Collecting data from AlertFlow"},
+		ID: request.Step.ID,
+		Messages: []models.Message{
+			{
+				Title: "Collecting Data",
+				Lines: []string{"Collecting data from AlertFlow"},
+			},
+		},
 		Status:    "running",
 		StartedAt: time.Now(),
 	})
@@ -85,9 +95,11 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	if err != nil {
 		err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 			ID: request.Step.ID,
-			Messages: []string{
-				"Failed to get Flow Data",
-				err.Error(),
+			Messages: []models.Message{
+				{
+					Title: "Collecting Data",
+					Lines: []string{"Failed to get Flow Data", err.Error()},
+				},
 			},
 			Status:     "error",
 			FinishedAt: time.Now(),
@@ -104,8 +116,13 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-		ID:       request.Step.ID,
-		Messages: []string{"Flow Data collected"},
+		ID: request.Step.ID,
+		Messages: []models.Message{
+			{
+				Title: "Collecting Data",
+				Lines: []string{"Flow Data collected"},
+			},
+		},
 	})
 	if err != nil {
 		return plugins.Response{
@@ -118,9 +135,11 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	if err != nil {
 		err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 			ID: request.Step.ID,
-			Messages: []string{
-				"Failed to get Alert Data",
-				err.Error(),
+			Messages: []models.Message{
+				{
+					Title: "Collecting Data",
+					Lines: []string{"Failed to get Alert Data", err.Error()},
+				},
 			},
 			Status:     "error",
 			FinishedAt: time.Now(),
@@ -137,8 +156,13 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-		ID:       request.Step.ID,
-		Messages: []string{"Alert Data collected"},
+		ID: request.Step.ID,
+		Messages: []models.Message{
+			{
+				Title: "Collecting Data",
+				Lines: []string{"Alert Data collected"},
+			},
+		},
 	})
 	if err != nil {
 		return plugins.Response{
@@ -159,8 +183,13 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-		ID:         request.Step.ID,
-		Messages:   finalMessages,
+		ID: request.Step.ID,
+		Messages: []models.Message{
+			{
+				Title: "Collecting Data",
+				Lines: finalMessages,
+			},
+		},
 		Status:     "success",
 		FinishedAt: time.Now(),
 	})
@@ -183,13 +212,13 @@ func (p *Plugin) HandleAlert(request plugins.AlertHandlerRequest) (plugins.Respo
 	}, errors.New("not implemented")
 }
 
-func (p *Plugin) Info() (models.Plugins, error) {
-	var plugin = models.Plugins{
+func (p *Plugin) Info() (models.Plugin, error) {
+	var plugin = models.Plugin{
 		Name:    "Collect Data",
 		Type:    "action",
-		Version: "1.1.2",
+		Version: "1.1.3",
 		Author:  "JustNZ",
-		Actions: models.Actions{
+		Action: models.Action{
 			Name:        "Collect Data",
 			Description: "Collects Flow and Alert data from AlertFlow",
 			Plugin:      "collect_data",
@@ -219,7 +248,7 @@ func (p *Plugin) Info() (models.Plugins, error) {
 				},
 			},
 		},
-		Endpoints: models.AlertEndpoints{},
+		Endpoint: models.Endpoint{},
 	}
 
 	return plugin, nil
@@ -242,7 +271,7 @@ func (s *PluginRPCServer) HandleAlert(request plugins.AlertHandlerRequest, resp 
 	return err
 }
 
-func (s *PluginRPCServer) Info(args interface{}, resp *models.Plugins) error {
+func (s *PluginRPCServer) Info(args interface{}, resp *models.Plugin) error {
 	result, err := s.Impl.Info()
 	*resp = result
 	return err
