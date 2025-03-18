@@ -97,8 +97,8 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	// Get Flow Data
-	bytes, err := flows.GetFlowData(request.Config, flowID, request.Platform)
-	if err != nil && bytes == nil {
+	flowBytes, err := flows.GetFlowData(request.Config, flowID, request.Platform)
+	if err != nil && flowBytes == nil {
 		err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 			ID: request.Step.ID,
 			Messages: []models.Message{
@@ -122,7 +122,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	flow := IncomingFlow{}
-	err = json.Unmarshal(bytes, &flow)
+	err = json.Unmarshal(flowBytes, &flow)
 	if err != nil {
 		err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 			ID: request.Step.ID,
@@ -232,9 +232,10 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	return plugins.Response{
-		Flow:    &flow.Flow,
-		Alert:   &alert,
-		Success: true,
+		Flow:      &flow.Flow,
+		FlowBytes: flowBytes,
+		Alert:     &alert,
+		Success:   true,
 	}, nil
 }
 
