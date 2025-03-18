@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/hashicorp/go-plugin v1.6.3
-	github.com/v1Flows/runner v1.0.0-beta1.0.20250317181948-346b191dd298
+	github.com/v1Flows/runner v1.0.0-beta1.0.20250318072320-51b63c849461
 	github.com/v1Flows/shared-library v1.0.3
 )
 
@@ -37,6 +37,7 @@ require (
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/uptrace/bun v1.2.11 // indirect
 	github.com/v1Flows/alertFlow/services/backend v0.0.0-20250317112742-7a11f04dd445 // indirect
+	github.com/v1Flows/exFlow/services/backend v0.0.0-20250314134041-010ef4dcb540 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect

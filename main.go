@@ -91,7 +91,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	// Get Flow Data
-	flow, err := flows.GetFlowData(request.Config, flowID, request.Execution.ID.String())
+	_, _, flow, err := flows.GetFlowData(request.Config, flowID, request.Platform)
 	if err != nil {
 		err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 			ID: request.Step.ID,
