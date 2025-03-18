@@ -154,7 +154,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	var alert af_models.Alerts
-	if request.Platform == "alertflow" && alertID == "" {
+	if request.Platform == "alertflow" && alertID != "" {
 		// Get Alert Data
 		alert, err = alerts.GetData(request.Config, alertID)
 		if err != nil {
@@ -202,7 +202,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		finalMessages = append(finalMessages, "Data collection completed")
 		finalMessages = append(finalMessages, "Flow Data:")
 		finalMessages = append(finalMessages, fmt.Sprintf("%v", flow))
-		if request.Platform == "alertflow" && alertID == "" {
+		if request.Platform == "alertflow" && alertID != "" {
 			finalMessages = append(finalMessages, "Alert Data:")
 			finalMessages = append(finalMessages, fmt.Sprintf("%v", alert))
 		}
