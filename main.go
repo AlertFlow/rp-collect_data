@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/rpc"
@@ -91,8 +92,8 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	// Get Flow Data
-	_, _, flow, err := flows.GetFlowData(request.Config, flowID, request.Platform)
-	if err != nil {
+	bytes, err := flows.GetFlowData(request.Config, flowID, request.Platform)
+	if err != nil && bytes == nil {
 		err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 			ID: request.Step.ID,
 			Messages: []models.Message{
@@ -113,6 +114,27 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		return plugins.Response{
 			Success: false,
 		}, err
+	}
+
+	flow := models.Flows{}
+	err = json.Unmarshal(bytes, &flow)
+	if err != nil {
+		err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
+			ID: request.Step.ID,
+			Messages: []models.Message{
+				{
+					Title: "Collecting Data",
+					Lines: []string{"Failed to unmarshal Flow Data", err.Error()},
+				},
+			},
+			Status:     "error",
+			FinishedAt: time.Now(),
+		})
+		if err != nil {
+			return plugins.Response{
+				Success: false,
+			}, err
+		}
 	}
 
 	err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
