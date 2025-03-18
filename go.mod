@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/hashicorp/go-plugin v1.6.3
-	github.com/v1Flows/runner v1.0.0-beta1.0.20250318073523-6b05c1bd7844
+	github.com/v1Flows/runner v1.0.0-beta1.0.20250318074559-2603c6710b57
 	github.com/v1Flows/shared-library v1.0.3
 )
 
