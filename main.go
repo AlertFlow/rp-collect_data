@@ -23,6 +23,10 @@ type Receiver struct {
 	Receiver string `json:"receiver"`
 }
 
+type IncomingFlow struct {
+	Flow models.Flows `json:"flow"`
+}
+
 // Plugin is an implementation of the Plugin interface
 type Plugin struct{}
 
@@ -117,7 +121,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		}, err
 	}
 
-	flow := models.Flows{}
+	flow := IncomingFlow{}
 	err = json.Unmarshal(bytes, &flow)
 	if err != nil {
 		err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
@@ -201,7 +205,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	if logData {
 		finalMessages = append(finalMessages, "Data collection completed")
 		finalMessages = append(finalMessages, "Flow Data:")
-		finalMessages = append(finalMessages, fmt.Sprintf("%v", flow))
+		finalMessages = append(finalMessages, fmt.Sprintf("%v", flow.Flow))
 		if request.Platform == "alertflow" && alertID != "" {
 			finalMessages = append(finalMessages, "Alert Data:")
 			finalMessages = append(finalMessages, fmt.Sprintf("%v", alert))
@@ -228,7 +232,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	return plugins.Response{
-		Flow:    &flow,
+		Flow:    &flow.Flow,
 		Alert:   &alert,
 		Success: true,
 	}, nil
