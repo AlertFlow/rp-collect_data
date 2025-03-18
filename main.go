@@ -67,7 +67,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 			},
 			Status:     "error",
 			FinishedAt: time.Now(),
-		})
+		}, request.Platform)
 
 		return plugins.Response{
 			Success: false,
@@ -84,7 +84,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		},
 		Status:    "running",
 		StartedAt: time.Now(),
-	})
+	}, request.Platform)
 	if err != nil {
 		return plugins.Response{
 			Success: false,
@@ -104,7 +104,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 			},
 			Status:     "error",
 			FinishedAt: time.Now(),
-		})
+		}, request.Platform)
 		if err != nil {
 			return plugins.Response{
 				Success: false,
@@ -129,7 +129,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 			},
 			Status:     "error",
 			FinishedAt: time.Now(),
-		})
+		}, request.Platform)
 		if err != nil {
 			return plugins.Response{
 				Success: false,
@@ -145,7 +145,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 				Lines: []string{"Flow Data collected"},
 			},
 		},
-	})
+	}, request.Platform)
 	if err != nil {
 		return plugins.Response{
 			Success: false,
@@ -165,7 +165,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 			},
 			Status:     "error",
 			FinishedAt: time.Now(),
-		})
+		}, request.Platform)
 		if err != nil {
 			return plugins.Response{
 				Success: false,
@@ -185,7 +185,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 				Lines: []string{"Alert Data collected"},
 			},
 		},
-	})
+	}, request.Platform)
 	if err != nil {
 		return plugins.Response{
 			Success: false,
@@ -214,7 +214,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		},
 		Status:     "success",
 		FinishedAt: time.Now(),
-	})
+	}, request.Platform)
 	if err != nil {
 		return plugins.Response{
 			Success: false,
