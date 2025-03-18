@@ -34,8 +34,10 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		flowID = val
 	}
 
-	if val, ok := request.Args["AlertID"]; ok {
-		alertID = val
+	if request.Platform == "alertflow" {
+		if val, ok := request.Args["AlertID"]; ok {
+			alertID = val
+		}
 	}
 
 	if val, ok := request.Args["LogData"]; ok {
