@@ -13,6 +13,7 @@ import (
 	"github.com/v1Flows/runner/pkg/flows"
 	"github.com/v1Flows/runner/pkg/plugins"
 
+	af_models "github.com/v1Flows/alertFlow/services/backend/pkg/models"
 	"github.com/v1Flows/shared-library/pkg/models"
 
 	"github.com/hashicorp/go-plugin"
@@ -34,10 +35,8 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		flowID = val
 	}
 
-	if request.Platform == "alertflow" {
-		if val, ok := request.Args["AlertID"]; ok {
-			alertID = val
-		}
+	if val, ok := request.Args["AlertID"]; ok {
+		alertID = val
 	}
 
 	if val, ok := request.Args["LogData"]; ok {
@@ -154,44 +153,47 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		}, err
 	}
 
-	// Get Alert Data
-	alert, err := alerts.GetData(request.Config, alertID)
-	if err != nil {
-		err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
+	var alert af_models.Alerts
+	if request.Platform == "alertflow" && alertID == "" {
+		// Get Alert Data
+		alert, err = alerts.GetData(request.Config, alertID)
+		if err != nil {
+			err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
+				ID: request.Step.ID,
+				Messages: []models.Message{
+					{
+						Title: "Collecting Data",
+						Lines: []string{"Failed to get Alert Data", err.Error()},
+					},
+				},
+				Status:     "error",
+				FinishedAt: time.Now(),
+			}, request.Platform)
+			if err != nil {
+				return plugins.Response{
+					Success: false,
+				}, err
+			}
+
+			return plugins.Response{
+				Success: false,
+			}, err
+		}
+
+		err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 			ID: request.Step.ID,
 			Messages: []models.Message{
 				{
 					Title: "Collecting Data",
-					Lines: []string{"Failed to get Alert Data", err.Error()},
+					Lines: []string{"Alert Data collected"},
 				},
 			},
-			Status:     "error",
-			FinishedAt: time.Now(),
 		}, request.Platform)
 		if err != nil {
 			return plugins.Response{
 				Success: false,
 			}, err
 		}
-
-		return plugins.Response{
-			Success: false,
-		}, err
-	}
-
-	err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-		ID: request.Step.ID,
-		Messages: []models.Message{
-			{
-				Title: "Collecting Data",
-				Lines: []string{"Alert Data collected"},
-			},
-		},
-	}, request.Platform)
-	if err != nil {
-		return plugins.Response{
-			Success: false,
-		}, err
 	}
 
 	finalMessages := []string{}
@@ -200,8 +202,10 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		finalMessages = append(finalMessages, "Data collection completed")
 		finalMessages = append(finalMessages, "Flow Data:")
 		finalMessages = append(finalMessages, fmt.Sprintf("%v", flow))
-		finalMessages = append(finalMessages, "Alert Data:")
-		finalMessages = append(finalMessages, fmt.Sprintf("%v", alert))
+		if request.Platform == "alertflow" && alertID == "" {
+			finalMessages = append(finalMessages, "Alert Data:")
+			finalMessages = append(finalMessages, fmt.Sprintf("%v", alert))
+		}
 	} else {
 		finalMessages = append(finalMessages, "Data collection completed")
 	}
