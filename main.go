@@ -67,7 +67,12 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 			Messages: []models.Message{
 				{
 					Title: "Collecting Data",
-					Lines: []string{"FlowID and AlertID are required"},
+					Lines: []models.Line{
+						{
+							Content: "FlowID and AlertID are required",
+							Color:   "danger",
+						},
+					},
 				},
 			},
 			Status:     "error",
@@ -84,7 +89,11 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		Messages: []models.Message{
 			{
 				Title: "Collecting Data",
-				Lines: []string{"Collecting data from " + request.Platform},
+				Lines: []models.Line{
+					{
+						Content: "Collecting data from " + request.Platform,
+					},
+				},
 			},
 		},
 		Status:    "running",
@@ -104,7 +113,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 			Messages: []models.Message{
 				{
 					Title: "Collecting Data",
-					Lines: []string{"Failed to get Flow Data", err.Error()},
+					Lines: []models.Line{
+						{
+							Content: "Failed to get Flow Data",
+							Color:   "danger",
+						},
+						{
+							Content: err.Error(),
+							Color:   "danger",
+						},
+					},
 				},
 			},
 			Status:     "error",
@@ -129,7 +147,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 			Messages: []models.Message{
 				{
 					Title: "Collecting Data",
-					Lines: []string{"Failed to unmarshal Flow Data", err.Error()},
+					Lines: []models.Line{
+						{
+							Content: "Failed to unmarshal Flow Data",
+							Color:   "danger",
+						},
+						{
+							Content: err.Error(),
+							Color:   "danger",
+						},
+					},
 				},
 			},
 			Status:     "error",
@@ -147,7 +174,11 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		Messages: []models.Message{
 			{
 				Title: "Collecting Data",
-				Lines: []string{"Flow Data collected"},
+				Lines: []models.Line{
+					{
+						Content: "Flow Data collected",
+					},
+				},
 			},
 		},
 	}, request.Platform)
@@ -167,7 +198,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 				Messages: []models.Message{
 					{
 						Title: "Collecting Data",
-						Lines: []string{"Failed to get Alert Data", err.Error()},
+						Lines: []models.Line{
+							{
+								Content: "Failed to get Alert Data",
+								Color:   "danger",
+							},
+							{
+								Content: err.Error(),
+								Color:   "danger",
+							},
+						},
 					},
 				},
 				Status:     "error",
@@ -189,7 +229,12 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 			Messages: []models.Message{
 				{
 					Title: "Collecting Data",
-					Lines: []string{"Alert Data collected"},
+					Lines: []models.Line{
+						{
+							Content: "Alert Data collected",
+							Color:   "success",
+						},
+					},
 				},
 			},
 		}, request.Platform)
@@ -200,18 +245,32 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		}
 	}
 
-	finalMessages := []string{}
+	finalMessages := []models.Line{}
 
 	if logData {
-		finalMessages = append(finalMessages, "Data collection completed")
-		finalMessages = append(finalMessages, "Flow Data:")
-		finalMessages = append(finalMessages, fmt.Sprintf("%v", flow.Flow))
+		finalMessages = append(finalMessages, models.Line{
+			Content: "Data collection completed",
+			Color:   "success",
+		})
+		finalMessages = append(finalMessages, models.Line{
+			Content: "Flow Data:",
+		})
+		finalMessages = append(finalMessages, models.Line{
+			Content: fmt.Sprintf("%v", flow.Flow),
+		})
 		if request.Platform == "alertflow" && alertID != "" {
-			finalMessages = append(finalMessages, "Alert Data:")
-			finalMessages = append(finalMessages, fmt.Sprintf("%v", alert))
+			finalMessages = append(finalMessages, models.Line{
+				Content: "Alert Data:",
+			})
+			finalMessages = append(finalMessages, models.Line{
+				Content: fmt.Sprintf("%v", alert),
+			})
 		}
 	} else {
-		finalMessages = append(finalMessages, "Data collection completed")
+		finalMessages = append(finalMessages, models.Line{
+			Content: "Data collection completed",
+			Color:   "success",
+		})
 	}
 
 	err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
@@ -249,7 +308,7 @@ func (p *Plugin) Info(request plugins.InfoRequest) (models.Plugin, error) {
 	var plugin = models.Plugin{
 		Name:    "Collect Data",
 		Type:    "action",
-		Version: "1.2.3",
+		Version: "1.2.4",
 		Author:  "JustNZ",
 		Action: models.Action{
 			Name:        "Collect Data",
